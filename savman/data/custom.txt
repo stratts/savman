@@ -1,0 +1,19 @@
+# Savman Custom Entries File 
+#
+# Each entry should start with 3 hyphens (---) and look something 
+# like this. Includes and excludes are optional:
+#
+# ---
+# name: My Game
+# directory: C:\Games\Path\to\My Game
+# include:
+# - folder1/*   # Include all files from folder
+# - folder2/*.cfg
+# exclude:
+# - folder3/*
+# - *.png
+#
+# The name can be anything you want. This will be used to determine
+# the name of the backup archive, potentially useful for multiple
+# copies/versions of the same game for example.
+#
