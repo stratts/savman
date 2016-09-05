@@ -171,9 +171,9 @@ class Backup:
             'include': self.include, 'exclude': self.exclude}
 
         # Add files not in previous versions
-        savelist = [f for f in curver.files.values() if not f.location in self.versions]
+        savelist = [f for f in curver.files.values() if f.location == curver.id]
 
-        if curver.newfiles:
+        if savelist:
             if verbose: logging.info("Backing up '{}' > '{}'".format(self.src, os.path.basename(file)))
             with tarfile.open(file, 'a') as t:
                 with tempfile.SpooledTemporaryFile(256000000) as temp:   # Write data zip to temp file
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     parser.add_argument('-rn', '--restore-num', dest='restorenum', metavar=('NUM','DIR'), nargs=2, 
         default=None, help='restore specific version, by number, to chosen directory')
     parser.add_argument('-rv', '--restore-ver', dest='restorever', metavar=('VER','DIR'), nargs=2, 
-        default=None, help='restore specific version to chosen directory')
+        default=None, help='restore specific version, by id, to chosen directory')
         
     #parser.add_argument('-rz', '--restorezip', dest='restorefile', type=str, default=None,
     #                    help='restore backup to a zip file', metavar='FILE')
