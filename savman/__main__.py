@@ -80,15 +80,14 @@ def run():
     #fh.level = logging.INFO
     log.addHandler(fh)
 
-    stderr_logger = logging.getLogger('STDERR')
-    sl = StreamToLogger(stderr_logger, logging.ERROR)
-    sys.stderr = sl
-
     with open(logfile, 'w') as lfile:
         start_time = time.strftime('%Y/%m/%d %H:%M:%S', time.gmtime())
         lfile.write('Started new log at {}\n'.format(start_time))
-        
-    cli.main()
+
+    try: 
+        cli.main()
+    except Exception as e:
+        logging.exception("Unexpected exception: %s", e)
 
 if __name__ == '__main__':
     run()
