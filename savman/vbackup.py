@@ -107,7 +107,8 @@ class Backup:
         curver = self.curver        # Shorter
         curver.time = round(time.time())
         if curver.time <= self.lastver.time: curver.time = self.lastver.time + 1
-        curver.set_id(curver.time)
+        tstr = time.strftime("%Y-%m-%d-%H%M%S", time.localtime(curver.time))
+        curver.set_id(tstr)
 
         # Normalise include/exclude paths
         include = [os.path.normpath(i) for i in include] if include else None
@@ -186,13 +187,12 @@ class Backup:
                 
                 if not 'info.json' in t.getnames(): taraddstr(t, 'info.json', json.dumps(bakinfo)) # Backup info
                 taraddstr(t, curver.info, json.dumps(verinfo,sort_keys=True,indent=4)) # Version info
-            
-            
+                      
         else: logging.info("Skipped backup '{}' (no files to backup)".format(self.src))
 
 
-    def restore(self, dst, ver = -1, to_zip = False):
-        if ver < 0: version = self.lastver
+    def restore(self, dst, ver = None, to_zip = False):
+        if not ver: version = self.lastver
         elif ver not in self.versions: 
             logging.warning('Version {} does not exist. Restoring lastest version instead'.format(ver))
             version = self.lastver      
@@ -213,9 +213,9 @@ class Backup:
                         else: z.extract(file, dst)
 
     
-    def trim(self, version = -1, file = None):
-        if version < 0: version = self.lastver      # Trim to newest version if none specified
-        else: version = self.versions[version]
+    def trim(self, ver = None, file = None):
+        if not ver: version = self.lastver      # Trim to newest version if none specified
+        else: version = self.versions[ver]
 
         if not file: file = self.file
         working = '{}.tempfile'.format(file)        # Temporary file in case something goes wrong
