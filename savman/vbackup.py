@@ -141,7 +141,7 @@ class Backup:
                 frel = os.path.normpath(os.path.join(rel, file))
                 frel_arc = frel.replace('\\','/')  # Archive name - uses forward slashes
                 stat = os.stat(fpath)
-                mod = round(stat.st_mtime)          # Modification time
+                mod = stat.st_mtime          # Modification time
                 
                 if frel_arc in lfiles and mod == lfiles[frel_arc].mod:  
                     curver.files[frel_arc] = lfiles[frel_arc] 
