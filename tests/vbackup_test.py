@@ -1,6 +1,29 @@
 import pytest
 from savman.vbackup import Backup
 
+
+@pytest.fixture 
+def filedir(tmpdir):
+    return tmpdir.mkdir('files')
+
+@pytest.fixture
+def bakfile(tmpdir):
+    file = tmpdir.join('test.vbak')
+    return str(file)
+
+@pytest.fixture
+def file1(filedir):
+    f1 = filedir.join('file1.txt')
+    f1.write('test1');
+    return f1
+
+@pytest.fixture  
+def file2(filedir):
+    f2 = filedir.join('file2.txt')
+    f2.write('test2');
+    return f2
+
+
 @pytest.fixture
 def backup(filedir, file1, file2):    
     bak = Backup()
@@ -28,27 +51,6 @@ def trimmed_backup(changed_backup, bakfile):
     bak.vertrim(1)
     bak = Backup(bakfile)
     return bak
-
-@pytest.fixture
-def bakfile(tmpdir):
-    file = tmpdir.join('test.vbak')
-    return str(file)
-
-@pytest.fixture
-def file1(filedir):
-    f1 = filedir.join('file1.txt')
-    f1.write('test1');
-    return f1
-
-@pytest.fixture  
-def file2(filedir):
-    f2 = filedir.join('file2.txt')
-    f2.write('test2');
-    return f2
-
-@pytest.fixture 
-def filedir(tmpdir):
-    return tmpdir.mkdir('files')
 
 
 def test_build(backup, file1, file2, filedir):
