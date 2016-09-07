@@ -2,7 +2,7 @@
 
 __author__ = 'strata8'
 __email__ = 'strata8@outlook.com'
-__version__ = '0.1.0'
+__version__ = '0.0.1'
 
 import os
 import sys
