@@ -71,7 +71,7 @@ class GameMan:
             self.backups = cache['backups']
 
             for item, data in cgames.items():
-                if not item in self.games:
+                if not item in self.games and item in self.db['games']:
                     game = Game(item, self.db['games'][item]['name'])
                     for loc in data:
                         game.locations.append(GameLocation(loc['path'], 
@@ -96,19 +96,16 @@ class GameMan:
             for item in yaml.safe_load_all(cfile):
                 if not {'name', 'directory'} <= set(item): continue
                 name = item['name']
-                gid = autoid(name)
+                game_id = autoid(name)
                 include = list(item['include']) if 'include' in item else None
                 exclude = list(item['exclude']) if 'exclude' in item else None
-                directory = str(item['directory'])              
+                directory = os.path.normpath(str(item['directory']))             
                 
                 if os.path.isdir(directory): 
                     self.customdirs.add(directory)
-                    location = {
-                        'dirs': [directory], 'include':include, 'exclude': exclude,
-                        'subdir': None
-                    }
-                    if not gid in self.games: self.games[gid] = []
-                    self.games[gid].append(location)
+                    location = GameLocation(directory, include, exclude)
+                    if not game_id in self.games: self.games[game_id] = Game(game_id, name)
+                    self.games[game_id].locations.append(location)
                     
                 
     def find_games(self):
