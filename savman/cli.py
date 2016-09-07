@@ -28,8 +28,7 @@ Options:
   --source <num>    Game location to restore or backup from
   --target <num>    Game location to restore to
 '''
-from savman import databaseman, gamefind, gameman, stopwatch, datapath, __version__
-from savman.vbackup import Backup
+from savman import databaseman, gameman, datapath, __version__
 import sys
 import os
 import logging
@@ -115,8 +114,10 @@ def main():
         print('\n{} games in total.\n'.format(len(gman.games)))
     
     if args['backup'] and args['<directory>']: 
+        if args['<game>']: game = [args['<game>']]
+        else: game = None
         if args['--trim']:
-            gman.backup_games(args['<directory>'], trim_min=2, trim_max=args['--trim'])
-        else: gman.backup_games(args['<directory>'])
+            gman.backup_games(args['<directory>'], games=game, trim_min=2, trim_max=args['--trim'])
+        else: gman.backup_games(args['<directory>'], games=game)
         
     logging.info('Finished!')
