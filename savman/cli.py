@@ -72,12 +72,19 @@ def main():
     gman.cachefile = datapath('cache')
     gman.customfile = datapath('custom.txt')
     gman.load_custom()
-    if not args['--nocache']: gman.load_cache()
-    elif not args['scan'] and not args['--scan']: 
-        logging.error('--nocache specified without scan command')
-        sys.exit(1)
+    gman.load_cache(dircache=not args['--nocache'])
 
     if args['scan'] or args['--scan']: gman.find_games() 
+
+    if args['load']:
+        gman.load_backups(args['<directory>'])
+
+    if args['restore']:
+        try:
+            gman.restore_game(args['<game>'], args['<directory>'], args['--source'],
+                args['--target'])
+        except TypeError as e:
+            logging.error(e)
     
     gman.save_cache()
     

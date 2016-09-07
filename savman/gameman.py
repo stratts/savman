@@ -25,7 +25,7 @@ class GameLocation:
 class GameMan:
     def __init__(self, database):
         self.games = {}
-        self.backups = {}
+        self.backups = {}                   #Keys: game id, Values: backup path
         self.db = database
         self.finder = gamefind.Finder()
         self.cachefile = ''
@@ -44,9 +44,10 @@ class GameMan:
         #print(games_json)
         with gzip.open(file, 'wt') as cfile:
             self.finder.trim_cache()
-            json.dump({'games': games_json, 'dirs': self.finder.export_cache()}, cfile)
+            json.dump({'games': games_json, 'dirs': self.finder.export_cache(),
+                'backups': self.backups}, cfile)
 
-    def load_cache(self, file=None):
+    def load_cache(self, file=None, dircache=True):
         if not file: 
             if not self.cachefile: raise TypeError('No cache file specified')
             file = self.cachefile
@@ -54,7 +55,7 @@ class GameMan:
             with gzip.open(file, 'rt') as cfile:
                 cache = json.load(cfile)
                 cgames = cache['games']
-                self.finder.import_cache(cache['dirs'])
+                if dircache: self.finder.import_cache(cache['dirs'])
             # Check that previously found game locations still exist
             for game, data in cgames.copy().items():
                 for location in reversed(data):
@@ -62,15 +63,25 @@ class GameMan:
                     if not os.path.isdir(path) or path in self.customdirs: 
                         data.remove(location)
                 if not data: del cgames[game]
+            # Check that backups still exist
+            for game, backups in cache['backups'].copy().items():
+                for backup in reversed(backups):
+                    if not os.path.isfile(backup): backups.remove(backup)
+                if not backups: del cache['backups'][game]
+            self.backups = cache['backups']
 
             for item, data in cgames.items():
-                #print(item)
                 if not item in self.games:
                     game = Game(item, self.db['games'][item]['name'])
                     for loc in data:
                         game.locations.append(GameLocation(loc['path'], 
                             loc['include'], loc['exclude']))
                     self.games[item] = game
+
+            if self.backups: 
+                logging.info( 'Loaded {} games and {} backups from cache'.format(len(self.games), 
+                    len(self.backups)) )
+            else: logging.info( 'Loaded {} games from cache'.format(len(self.games)) )
 
         except FileNotFoundError: 
             logging.info('Cache file not loaded (file not found)')
@@ -166,31 +177,39 @@ class GameMan:
         #pool.join()
 
     def load_backups(self, location):
+        self.backups = {}
         for item in os.listdir(location):
-            path = os.path.join(location, item)
+            path = os.path.realpath(os.path.join(location, item))
             if os.path.isfile(path):
                 if fnmatch.fnmatch(item, '*.savman.vbak'):
                     backup = Backup(path)
                     if backup.id in self.db['games']:
-                        self.backups[backup.id] = backup
-        logging.info('Loaded {} backups'.format(len(self.backups)))
+                        if not backup in self.backups: self.backups[backup.id] = [path]
+                        else:  self.backups[backup.id].append(path)
+        logging.info("Loaded {} backups from '{}'".format(len(self.backups), location))
 
-    def restore_backup(self, dst, game, version=-1):
-        #if not os.path.isdir(dst): os.mkdir(dst)
-        if not game in self.backups:
-            logging.error("'{}' not found in loaded backups".format(name))
-        else:
-            self.backups[game].restorenum(dst, version)
+    def restore_backup(self, game_id, dst, source=None):
+        try: backups = self.backups[game_id]
+        except KeyError:
+             raise TypeError("{}: could not restore, no backup found".format(game_id))
+        if len(backups) > 1:
+            if not source:
+                raise TypeError('Source location required as backup has multiple locations')
+        else: 
+            backup = Backup(backups[0])
+            backup.restore(dst)
 
-    def restore_backups(self, location, games=[]):
-        if not os.path.isdir(location): os.mkdir(location)
-        if not games: games = self.backups.keys()
-        for game in games:
-            if len(game) != 2: game = (game, -1)
-            name = game[0]
-            version = game[1]
-            dst = os.path.join(location, name)
-            self.restore_backup(dst, name, version)
+    def restore_game(self, game_id, dst=None, source=None, target=None):
+        gid = next((g for g in self.games if g.lower() == game_id.lower()), game_id)
+        try: game = self.games[gid]
+        except KeyError: 
+            raise TypeError("{}: could not restore, not found on computer".format(game_id))
+        if len(game.locations) > 1:
+            if not target: 
+                raise TypeError('Target location required as game has multiple locations')
+        else: 
+            if dst: self.restore_backup(gid, dst, source)
+            else: self.restore_backup(gid, game.locations[0].path, source)       
 
 
 def autoid(name):
