@@ -212,6 +212,8 @@ class Backup:
                         if to_zip: zfileobj.writestr(z.getinfo(file), z.read(file))
                         else: z.extract(file, dst)
 
+        logging.info("Restored '{}' > '{}'".format(self.filename, dst))
+
     
     def trim(self, ver = None, file = None):
         if not ver: version = self.lastver      # Trim to newest version if none specified
