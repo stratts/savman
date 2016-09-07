@@ -10,7 +10,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'pyyaml', 'requests', 'pypiwin32', 'tqdm'
+    'pyyaml', 'requests', 'pypiwin32', 'tqdm', 'docopt'
 ]
 
 test_requirements = [
