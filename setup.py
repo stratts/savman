@@ -32,7 +32,10 @@ setup(
                  'savman'},
     package_data= {'savman': ['data/gamedata', 'data/custom.txt']},
     entry_points={
-        'console_scripts': ['savman = savman.__main__:run']
+        'console_scripts': [
+            'savman = savman.__main__:run',
+            'vbackup = savman.vbackup:main'
+            ]
     },
     include_package_data=True,
     install_requires=requirements,
