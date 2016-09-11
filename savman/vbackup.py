@@ -1,3 +1,24 @@
+'''A utility for creating incremental backup archives.
+
+Usage:
+  vbackup info <file>
+  vbackup build <directory> <file>
+  vbackup restore [--ver=<id>|--num=<num>] <directory> <file>
+  vbackup trim [--output=<file>] <num> <file>
+  vbackup -h | --help
+  
+Commands:
+  info              Show information about backup
+  build             Build backup from directory
+  restore           Restore backup to directory
+  trim              Trim backup to <num> versions
+
+Options:
+  -h --help         Display this screen 
+  --ver=<id>        Version ID to restore
+  --num=<num>       Version number to restore
+  --output=<file>   Save trimmed backup to separate file
+'''
 import os
 import sys
 import tarfile
@@ -9,6 +30,7 @@ import tempfile
 import zipfile
 from tqdm import tqdm
 from collections import OrderedDict
+from docopt import docopt
 
 logger = logging.getLogger('backup')
 
@@ -279,50 +301,21 @@ class Backup:
     def autotrim(self, maxver = 5, minver = 1, file = None):
         if len(self.versions) > maxver: self.vertrim(minver, file)
 
+def main():
+    args = docopt(__doc__, version='0.1.0')
+    bak = Backup(args['<file>'])
 
-if __name__ == '__main__':
-    import argparse
-    logging.basicConfig(level=logging.INFO, 
-        format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%H:%M:%S')        
+    if args['build']:
+        bak.build(args['<directory>'])
+        bak.save(args['<file>'])
+    if args['restore']: 
+        if args['--ver']: bak.restore(args['<directory>'], ver=args['--ver'])
+        elif args['--num']: bak.restorenum(args['--num'], args['<directory>'])
+        else: bak.restore(args['<directory>'])
 
-    parser = argparse.ArgumentParser(
-        description='Create and manage versioned backup files(.vbak) of directories')
-    parser.add_argument('file', metavar='FILE', type=str,
-                        help='.vbak file to create or load')
-    parser.add_argument('-i', '--info', dest='info', action='store_true', default=None,
-                        help='build backup from chosen source directory')
-    parser.add_argument('-b', '--build', dest='dir', type=str, default=None,
-                        help='build backup from chosen source directory')
-    parser.add_argument('-r', '--restore', dest='restore', type=str, default=None,
-                        help='restore backup to chosen directory', metavar='DIR')
-    parser.add_argument('-rn', '--restore-num', dest='restorenum', metavar=('NUM','DIR'), nargs=2, 
-        default=None, help='restore specific version, by number, to chosen directory')
-    parser.add_argument('-rv', '--restore-ver', dest='restorever', metavar=('VER','DIR'), nargs=2, 
-        default=None, help='restore specific version, by id, to chosen directory')
-        
-    #parser.add_argument('-rz', '--restorezip', dest='restorefile', type=str, default=None,
-    #                    help='restore backup to a zip file', metavar='FILE')
-    parser.add_argument('-t', '--trim', dest='trim', type=int, default=0, metavar='NUM',
-                        help='trim backup to chosen number of versions')
-    parser.add_argument('-o', '--output', dest='out', type=str, default=None,
-                        help='save trimmed backup to separate file')
+    if args['trim']: bak.vertrim(args['<num>'], args['--output'])
 
-    args = parser.parse_args()
-    
-    out = args.out if args.out else args.file
-    bak = Backup(args.file)
-    if args.dir:
-        bak.build(args.dir)
-        bak.save(args.file)
-    if args.restore: bak.restore(args.restore)
-    if args.restorever: 
-        print(args.restorever)
-        bak.restore(args.restorever[1], int(args.restorever[0]))
-    if args.restorenum: bak.restorenum(args.restorenum[0], args.restorenum[1])
-   # if args.restorefile: bak.restore(args.restorefile, args.version, to_zip=True)
-    if args.trim: bak.vertrim(args.trim, out)
-
-    if args.info:
+    if args['info']:
         print('Source:', bak.src, '\n')
         table = OrderedDict([('No.', []), ('Time', []), ('Files', []), ('Size', [])])
         width = {}
@@ -344,7 +337,7 @@ if __name__ == '__main__':
             rowtext = ''
             for idx, item in enumerate(row):
                 rowtext += '{}{}'.format(item, ' '*(width[htext[idx]]-len(item)+space))
-            print(rowtext)
-                
-            
-            
+            print(rowtext)       
+
+if __name__ == '__main__':
+    main()
