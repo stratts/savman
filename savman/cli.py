@@ -82,8 +82,9 @@ def main():
         try:
             gman.restore_game(args['<game>'], args['<directory>'], args['--source'],
                 args['--target'])
-        except TypeError as e:
-            logging.error(e)
+        except gameman.InvalidIdError as e:
+            logging.error("Could not restore '{}': {}".format(args['<game>'], e))
+            sys.exit(1)
     
     gman.save_cache()
     

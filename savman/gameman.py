@@ -10,6 +10,8 @@ import logging
 import hashlib
 from savman.vbackup import Backup
 
+class InvalidIdError(Exception): pass
+
 class Game:
     def __init__(self, gid, name):
         self.id = gid
@@ -188,7 +190,7 @@ class GameMan:
     def restore_backup(self, game_id, dst, source=None):
         try: backups = self.backups[game_id]
         except KeyError:
-             raise TypeError("{}: could not restore, no backup found".format(game_id))
+             raise InvalidIdError("No backup found for game")
         if len(backups) > 1:
             if not source:
                 raise TypeError('Source location required as backup has multiple locations')
@@ -200,7 +202,7 @@ class GameMan:
         gid = next((g for g in self.games if g.lower() == game_id.lower()), game_id)
         try: game = self.games[gid]
         except KeyError: 
-            raise TypeError("{}: could not restore, not found on computer".format(game_id))
+            raise InvalidIdError("Not found in current games")
         if len(game.locations) > 1:
             if not target: 
                 raise TypeError('Target location required as game has multiple locations')
