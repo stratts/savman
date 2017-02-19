@@ -231,7 +231,14 @@ class Backup:
                 zfile = t.extractfile(self.versions[ver].data)      # Open version data zip
                 with zipfile.ZipFile(zfile) as z:
                     for file in files: 
-                        if to_zip: zfileobj.writestr(z.getinfo(file), z.read(file))
+                        if to_zip: 
+                            info = z.getinfo(file)
+                            if info.file_size > 50000000:
+                                with tempfile.TemporaryDirectory() as tmpdir:
+                                   z.extract(file, tmpdir)
+                                   zfileobj.write(os.path.join(tmpdir, info.filename), info.filename)
+                                #sys.exit(1)
+                            else: zfileobj.writestr(info, z.read(file))
                         else: z.extract(file, dst)
 
         logging.info("Restored '{}' > '{}'".format(self.filename, dst))
@@ -293,12 +300,12 @@ class Backup:
         else: logging.error('Cannot restore - there is no version with the number {}'.format(num))
 
     def vertrim(self, num = 1, file = None):
-        """Trim to NUM most recent versions"""
+        """Trim to NUM most recent versions"""       
         versions = sorted(self.versions.values(), key=lambda v: v.time)     # List from oldest > newest
-        if num > len(versions): return                  # We have fewer versions than specified
+        if num >= len(versions): return                  # We have fewer versions than specified
         self.trim(versions[len(versions)-num].id, file)
 
-    def autotrim(self, maxver = 5, minver = 1, file = None):
+    def autotrim(self, minver = 1, maxver = 5, file = None):
         if len(self.versions) > maxver: self.vertrim(minver, file)
 
 def main():
