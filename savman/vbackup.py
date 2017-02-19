@@ -320,7 +320,7 @@ def main():
         elif args['--num']: bak.restorenum(args['--num'], args['<directory>'])
         else: bak.restore(args['<directory>'])
 
-    if args['trim']: bak.vertrim(args['<num>'], args['--output'])
+    if args['trim']: bak.vertrim(int(args['<num>']), args['--output'])
 
     if args['info']:
         print('Source:', bak.src, '\n')
