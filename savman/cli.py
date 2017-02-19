@@ -118,7 +118,7 @@ def main():
         if args['<game>']: game = [args['<game>']]
         else: game = None
         if args['--trim']:
-            gman.backup_games(args['<directory>'], games=game, trim_min=2, trim_max=args['--trim'])
+            gman.backup_games(args['<directory>'], games=game, trim_min=2, trim_max=int(args['--trim']))
         else: gman.backup_games(args['<directory>'], games=game)
         
     logging.info('Finished!')
