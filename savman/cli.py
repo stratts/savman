@@ -23,8 +23,8 @@ Options:
   --nocache         Scan without cache, slower but can find games the
                     regular scan missed
   --update          Check for database update
-
-  --trim <max>      Trim backup once it exceeds <max> versions
+  --max <count>     Maximum number of versions to keep (default: 10)
+  --min <count>     Number of versions to trim to when max is exceeded (default: 5)
   --source <num>    Game location to restore or backup from
   --target <num>    Game location to restore to
 '''
@@ -117,8 +117,19 @@ def main():
     if args['backup'] and args['<directory>']: 
         if args['<game>']: game = [args['<game>']]
         else: game = None
-        if args['--trim']:
-            gman.backup_games(args['<directory>'], games=game, trim_min=2, trim_max=int(args['--trim']))
-        else: gman.backup_games(args['<directory>'], games=game)
+        minver = 5
+        maxver = 10
+        try:
+            if args['--min']: minver = int(args['--min'])
+            if args['--max']: maxver = int(args['--max'])
+        except ValueError:
+            logging.error("Argument for '--max' and '--min' must be a number")
+            sys.exit(1)
+        if minver >= maxver: 
+            logging.error("Value for '--min' must be under '--max' (min: {}, max: {})".format(
+                minver, maxver
+            ))
+            sys.exit(1)
+        gman.backup_games(args['<directory>'], games=game, trim_min=minver, trim_max=maxver)
         
     logging.info('Finished!')
