@@ -156,7 +156,7 @@ class Finder:
         if not self.dircache: newcache = True
         else: newcache = False
         for directory, data in self.dircache.items():
-            self.match_directory(directory, data['profile'])       
+            self.match_directory(directory, data['profile'])    # Check matches with dirs in cache   
         for path in self.searchpaths:
             path = os.path.normpath(path)
             for root, dirs, files in os.walk(path):  
@@ -167,18 +167,17 @@ class Finder:
                 for item in self.excl:
                     if item in dirs: del dirs[dirs.index(item)]
                     
-                if (not newcache and root in self.dircache and not 
-                        self.dircache[root]['hasgames']):
+                if (not newcache and root in self.dircache and not  # If we've searched before
+                        self.dircache[root]['hasgames']):           # and not found any games
                     for d in reversed(dirs):
-                        droot = os.path.join(root, d)
-                        if droot in self.dircache: dirs.remove(d)
+                        droot = os.path.join(root, d)               # Stop searching all folders
+                        if droot in self.dircache: dirs.remove(d)   # that aren't new
                             
-
                 dirprofile = set([e.lower() for e in files+dirs])
-                self.dircache[root] = {'profile': dirprofile, 'hasgames': False}
+                self.dircache[root] = {'profile': dirprofile, 'hasgames': False}    # Add to cache
                 if rel=='.': self.has_games(root)
 
-                if self.match_directory(root, dirprofile): del dirs[:]
+                if self.match_directory(root, dirprofile): del dirs[:]  # Stop searching if match
     
                 for item in self.deep:
                     if fnmatch.fnmatch(root, os.path.normpath(item)) and not rel=='.':
