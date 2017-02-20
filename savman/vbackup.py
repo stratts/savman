@@ -233,11 +233,10 @@ class Backup:
                     for file in files: 
                         if to_zip: 
                             info = z.getinfo(file)
-                            if info.file_size > 50000000:
+                            if info.file_size > 50000000:   # Extract to disk if file > 50MB
                                 with tempfile.TemporaryDirectory() as tmpdir:
                                    z.extract(file, tmpdir)
                                    zfileobj.write(os.path.join(tmpdir, info.filename), info.filename)
-                                #sys.exit(1)
                             else: zfileobj.writestr(info, z.read(file))
                         else: z.extract(file, dst)
 
