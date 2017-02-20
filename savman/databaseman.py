@@ -50,7 +50,9 @@ class Manager:
             self.latest = latest
             return True    
         else:
-            logger.info('No new database found')
+            logger.info('No new database found (current: {}, latest: {})'.format(
+                self.ver, latest['version']
+            ))
             return False
 
     def download(self, filename):
