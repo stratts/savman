@@ -42,6 +42,34 @@ def taraddstr(tarobj, arcname, string):
         tinfo = tarobj.gettarinfo(arcname=arcname, fileobj=temp)
         tarobj.addfile(tinfo, temp)
 
+def _copyfileobj(src, dst, length=None, exception=OSError):
+    """Copy length bytes from fileobj src to fileobj dst.
+       If length is None, copy the entire content.
+    """
+    bufsize = 4*1024*1024
+
+    if length == 0:
+        return
+    if length is None:
+        shutil.copyfileobj(src, dst, bufsize)
+        return
+
+    blocks, remainder = divmod(length, bufsize)
+    for b in range(blocks):
+        buf = src.read(bufsize)
+        if len(buf) < bufsize:
+            raise exception("unexpected end of data")
+        dst.write(buf)
+
+    if remainder != 0:
+        buf = src.read(remainder)
+        if len(buf) < remainder:
+            raise exception("unexpected end of data")
+        dst.write(buf)
+    return
+
+tarfile.copyfileobj = _copyfileobj      # Increased copy buffer size
+
 class BackupVersion():
     def __init__(self, id = None, time = 0, size = 0, sizedelta = 0):
         self.id = id
@@ -198,11 +226,11 @@ class Backup:
 
         if savelist:
             if verbose: logging.info("Backing up '{}' > '{}'".format(self.src, os.path.basename(file)))
-            with tarfile.open(file, 'a') as t:
+            with tarfile.open(file, 'a') as t:           
                 with tempfile.SpooledTemporaryFile(256000000) as temp:   # Write data zip to temp file
                     with zipfile.ZipFile(temp, 'w', compression=zipfile.ZIP_DEFLATED) as z:
                         for f in tqdm(savelist, ncols=100): z.write(f.path, f.name)    
-                                
+
                     temp.seek(0)
                     tinfo = t.gettarinfo(arcname=curver.data, fileobj=temp)
                     t.addfile(tinfo, temp)     # Add zip created in temp to tarball
