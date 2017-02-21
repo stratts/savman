@@ -137,6 +137,7 @@ class GameMan:
 
         finder.find()
 
+        found = set()
         for find, dirs in finder.found.items():
             loc = locations[find]       # Retrieve location data from database
             dirs = [ d for d in dirs if not d in self.customdirs ]
@@ -144,10 +145,13 @@ class GameMan:
             if not gameid in self.games:
                 game = Game(gameid, games[gameid]['name'])
                 self.games[gameid] = game
+                found.add(gameid)
             else: game = self.games[gameid]
             for directory in dirs:
                 location = GameLocation(directory, loc['include'], loc['exclude'])
                 game.locations.append(location)
+        
+        logging.info("{} games found".format(len(found)))
             
 
     def backup_games(self, dst, games=[], trim_min=None, trim_max=None):

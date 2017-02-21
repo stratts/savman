@@ -147,7 +147,6 @@ class Finder:
                         else: self.itemdict[item].add(game)
 
         self.search()
-        logging.info("{} games found".format(len(self.found)))
         return self.found
 
 
