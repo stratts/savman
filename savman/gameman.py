@@ -49,7 +49,7 @@ class GameMan:
             json.dump({'games': games_json, 'dirs': self.finder.export_cache(),
                 'backups': self.backups}, cfile)
 
-    def load_cache(self, file=None, dircache=True):
+    def load_cache(self, file=None, dircache=True, cleargames=False):
         if not file: 
             if not self.cachefile: raise TypeError('No cache file specified')
             file = self.cachefile
@@ -58,6 +58,7 @@ class GameMan:
                 cache = json.load(cfile)
                 cgames = cache['games']
                 if dircache: self.finder.import_cache(cache['dirs'])
+
             # Check that previously found game locations still exist
             for game, data in cgames.copy().items():
                 for location in reversed(data):
@@ -72,13 +73,14 @@ class GameMan:
                 if not backups: del cache['backups'][game]
             self.backups = cache['backups']
 
-            for item, data in cgames.items():
-                if not item in self.games and item in self.db['games']:
-                    game = Game(item, self.db['games'][item]['name'])
-                    for loc in data:
-                        game.locations.append(GameLocation(loc['path'], 
-                            loc['include'], loc['exclude']))
-                    self.games[item] = game
+            if not cleargames:
+                for item, data in cgames.items():
+                    if not item in self.games and item in self.db['games']:
+                        game = Game(item, self.db['games'][item]['name'])
+                        for loc in data:
+                            game.locations.append(GameLocation(loc['path'], 
+                                loc['include'], loc['exclude']))
+                        self.games[item] = game
 
             if self.backups: 
                 logging.info( 'Loaded {} games and {} backups from cache'.format(len(self.games), 

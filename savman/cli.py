@@ -64,16 +64,17 @@ def main():
         shutil.copy(os.path.join(sys._MEIPASS, 'gamedata'), dbname)
     dbman.load(dbname)
 
-    if args['update'] or args['--update']:
-        if dbman.check_update(): dbman.download(dbname)  
+    if args['update'] or args['--update']: dbman.check_update()
+    if dbman.update: dbman.download(dbname) 
 
     gman = gameman.GameMan(dbman.db)
     gman.cachefile = datapath('cache')
     gman.customfile = datapath('custom.txt')
-    gman.load_custom()
-    gman.load_cache(dircache=not args['--nocache'])
 
-    if args['scan'] or args['--scan']: gman.find_games() 
+    gman.load_custom()
+    gman.load_cache(dircache=not args['--nocache'], cleargames=dbman.update)
+    # Clear cache and rescan when database updated
+    if args['scan'] or args['--scan'] or dbman.update: gman.find_games() 
 
     if args['load']:
         gman.load_backups(args['<directory>'])
