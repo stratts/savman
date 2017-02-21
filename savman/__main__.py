@@ -44,7 +44,9 @@ class StreamToLogger(object):
 
 def run():
     # Copy included files to data directory
-    data = os.path.join(os.path.dirname(__file__), 'data')
+    if hasattr(sys, 'frozen'):
+        data = os.path.dirname(sys.executable)
+    else: data = os.path.join(os.path.dirname(__file__), 'data')
 
     if not os.path.isfile(datapath('custom.txt')):
         shutil.copy( os.path.join(data, 'custom.txt'), datapath() )

@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['savman.py'],
+a = Analysis(['savman_script.py'],
              pathex=['.'],
              binaries=None,
              datas=[('savman/data/*', '.')],
