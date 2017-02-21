@@ -229,7 +229,11 @@ class Backup:
             with tarfile.open(file, 'a') as t:           
                 with tempfile.SpooledTemporaryFile(256000000) as temp:   # Write data zip to temp file
                     with zipfile.ZipFile(temp, 'w', compression=zipfile.ZIP_DEFLATED) as z:
-                        for f in tqdm(savelist, ncols=100): z.write(f.path, f.name)    
+                        for f in tqdm(savelist, ncols=100): 
+                            compression = None
+                            name, ext = os.path.splitext(f.name)
+                            if ext in {'.png','.jpg','.zip'}: compression = zipfile.ZIP_STORED
+                            z.write(f.path, f.name, compression)    
 
                     temp.seek(0)
                     tinfo = t.gettarinfo(arcname=curver.data, fileobj=temp)
