@@ -15,6 +15,7 @@ class Manager:
         self.ver = 0
         self.latest = {}
         self.latesturl = ''
+        self.update = False
 
     def load(self, filename): 
         logger.info("Loading database")
@@ -43,17 +44,19 @@ class Manager:
         try: req = requests.get(self.latesturl)
         except ConnectionError: 
             logging.error('Could not connect to server') 
-            return False
+            self.update = False
         latest = json.loads(req.text)
         if latest['version'] > self.ver:
-            logger.info('New database version available!')
+            logger.info('New database version available! (current: {}, latest: {})'.format(
+                self.ver, latest['version']
+            ))
             self.latest = latest
-            return True    
+            self.update = True 
         else:
             logger.info('No new database found (current: {}, latest: {})'.format(
                 self.ver, latest['version']
             ))
-            return False
+            self.update = False
 
     def download(self, filename):
         if not self.latest: self.check_update()
