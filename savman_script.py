@@ -1,3 +1,3 @@
-from savman.__main__ import run
+from savman import app
 
-run()
+app.main()

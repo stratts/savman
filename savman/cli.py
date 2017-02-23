@@ -36,7 +36,7 @@ import time
 from docopt import docopt
 from threading import Thread
 
-def main():
+def run():
     print('savman', __version__)
 
     if '--debug' in sys.argv:

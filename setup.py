@@ -33,7 +33,7 @@ setup(
     package_data= {'savman': ['data/gamedata', 'data/custom.txt']},
     entry_points={
         'console_scripts': [
-            'savman = savman.__main__:run',
+            'savman = savman.app:main',
             'vbackup = savman.vbackup:main'
             ]
     },
