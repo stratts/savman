@@ -3,6 +3,7 @@ import logging
 import fnmatch
 import win32api
 import win32file
+from win32com.shell import shell, shellcon
 
 VARIABLE = 2
 PROFILE = 4
@@ -24,7 +25,7 @@ class Finder:
                      '$SysReset']
         self.vars = {USERPROFILE: os.environ['USERPROFILE'],
                      APPDATA: os.path.normpath(os.path.join(os.environ['APPDATA'],'..')),
-                     USERDOC: os.path.join(os.environ['USERPROFILE'],'Documents')
+                     USERDOC: shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL, None, 0)
                      }
         self.deep = ['*/steamapps/common','*/Steam/userdata']
         self.searchpaths = get_drives() if not searchpaths else searchpaths
@@ -33,7 +34,7 @@ class Finder:
         self.profiles = {}
         self.dircache = {}
         self.itemdict = {}
-        self.lookups = 0
+        self.lookups = 0           
 
     def add_profile(self, game_id, profile_items, profile_dir=None, subdir=''):
         if not type(profile_items) == list: 
