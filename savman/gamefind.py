@@ -27,7 +27,7 @@ class Finder:
                      APPDATA: os.path.normpath(os.path.join(os.environ['APPDATA'],'..')),
                      USERDOC: shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL, None, 0)
                      }
-        self.deep = ['*/steamapps/common','*/Steam/userdata']
+        self.deep = ['*/Steam/steamapps','*/Steam/userdata']
         self.searchpaths = get_drives() if not searchpaths else searchpaths
         self.tofind = {}
         self.found = {}
