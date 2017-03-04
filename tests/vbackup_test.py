@@ -71,6 +71,12 @@ def test_build_exclude(file1, file2, filedir):
     assert 'file1.txt' not in bak.curver.files
     assert 'file2.txt' in bak.curver.files
 
+def test_build_include_exclude(file1, file2, filedir):
+    bak = Backup()
+    bak.build(str(filedir), include=['file*.txt'], exclude=['*1.txt'])
+    assert 'file1.txt' not in bak.curver.files
+    assert 'file2.txt' in bak.curver.files
+
 def test_save_load(backup, saved_backup):
     bak = saved_backup
     assert 'file1.txt' in bak.lastver.files
