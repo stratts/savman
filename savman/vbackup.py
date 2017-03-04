@@ -191,15 +191,18 @@ class Backup:
                 frel_arc = frel.replace('\\','/')  # Archive name - uses forward slashes
                 stat = os.stat(fpath)
                 mod = stat.st_mtime          # Modification time
-                
-                if frel_arc in lfiles and mod == lfiles[frel_arc].mod:  
-                    curver.files[frel_arc] = lfiles[frel_arc] 
-                    curver.size += stat.st_size
-                    continue                        # Skip file if same as previous version
+
                 if include:
                     if not [m for m in include if fnmatch.fnmatch(frel, m)]: continue  
                 if exclude:
                     if [m for m in exclude if fnmatch.fnmatch(frel, m)]: continue  
+                
+                if frel_arc in lfiles:
+                    existing = lfiles[frel_arc]
+                    if mod == existing.mod and stat.st_size == existing.size:  
+                        curver.files[frel_arc] = existing
+                        curver.size += stat.st_size
+                        continue                        # Skip file if same as previous version
 
                 curver.size += stat.st_size
                 curver.sizedelta += stat.st_size
