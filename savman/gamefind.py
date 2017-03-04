@@ -153,8 +153,6 @@ class Finder:
 
     def search(self):
         rootnum = 0
-        if not self.dircache: newcache = True
-        else: newcache = False
         for directory, data in self.dircache.items():
             self.match_directory(directory, data['profile'])    # Check matches with dirs in cache   
         for path in self.searchpaths:
@@ -167,11 +165,11 @@ class Finder:
                 for item in self.excl:
                     if item in dirs: del dirs[dirs.index(item)]
                     
-                if (not newcache and root in self.dircache and not  # If we've searched before
-                        self.dircache[root]['hasgames']):           # and not found any games
+                if (self.dircache and root in self.dircache and not     # If we've searched before
+                        self.dircache[root]['hasgames']):               # and not found any games
                     for d in reversed(dirs):
-                        droot = os.path.join(root, d)               # Stop searching all folders
-                        if droot in self.dircache: dirs.remove(d)   # that aren't new
+                        droot = os.path.join(root, d)                   # Stop searching all folders
+                        if droot in self.dircache: dirs.remove(d)       # that aren't new
                             
                 dirprofile = set([e.lower() for e in files+dirs])
                 self.dircache[root] = {'profile': dirprofile, 'hasgames': False}    # Add to cache
