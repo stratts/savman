@@ -186,7 +186,6 @@ class Backup:
                     dirs.remove(d)
 
             for file in files:   
-                add = True
                 fpath = os.path.realpath(os.path.join(root, file))     # Path to file
                 frel = os.path.normpath(os.path.join(rel, file))
                 frel_arc = frel.replace('\\','/')  # Archive name - uses forward slashes
@@ -198,17 +197,15 @@ class Backup:
                     curver.size += stat.st_size
                     continue                        # Skip file if same as previous version
                 if include:
-                    if [m for m in include if fnmatch.fnmatch(frel, m)]: add = True  
-                    else: add = False
+                    if not [m for m in include if fnmatch.fnmatch(frel, m)]: continue  
                 if exclude:
-                    if [m for m in exclude if fnmatch.fnmatch(frel, m)]: add = False  
+                    if [m for m in exclude if fnmatch.fnmatch(frel, m)]: continue  
 
-                if add:
-                    curver.size += stat.st_size
-                    curver.sizedelta += stat.st_size
-                    curfile = BackupFile(frel_arc, stat.st_size, mod, curver.id, fpath)
-                    curver.newfiles += 1
-                    curver.files[frel_arc] = curfile     # Add file to version file dict    
+                curver.size += stat.st_size
+                curver.sizedelta += stat.st_size
+                curfile = BackupFile(frel_arc, stat.st_size, mod, curver.id, fpath)
+                curver.newfiles += 1
+                curver.files[frel_arc] = curfile     # Add file to version file dict    
 
         logging.debug('{} changed files found'.format(curver.newfiles))
 
