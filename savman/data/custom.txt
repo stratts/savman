@@ -11,7 +11,7 @@
 # - folder2/*.cfg
 # exclude:
 # - folder3/*
-# - *.png
+# - '*.png'     # Wildcards at the start must be in quotes
 #
 # The name can be anything you want. This will be used to determine
 # the name of the backup archive, potentially useful for multiple
