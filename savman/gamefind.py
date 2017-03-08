@@ -66,7 +66,10 @@ class Finder:
         for p in paths:
             dirname = os.path.dirname(p)
             if not dirname in paths: paths.append(dirname)
-            self.dircache[p]['hasgames'] = True
+            if not p in self.dircache:
+                dirprofile = set([item.lower() for item in os.listdir(p)])
+                self.dircache[p] = {'profile': dirprofile, 'hasgames': True}
+            else: self.dircache[p]['hasgames'] = True
             
     def import_cache(self, cache):
         for item, data in cache.items():
